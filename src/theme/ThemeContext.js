@@ -1,16 +1,10 @@
 import React, { createContext } from 'react';
-import { useColorScheme } from 'react-native';
 
-export const ThemeContext = createContext({
-  theme: 'light',
-});
+export const ThemeContext = createContext({ theme: 'dark' });
 
 export function ThemeProvider({ children }) {
-  const systemColorScheme = useColorScheme();
-  const theme = systemColorScheme || 'light';
-
   return (
-    <ThemeContext.Provider value={{ theme }}>
+    <ThemeContext.Provider value={{ theme: 'dark' }}>
       {children}
     </ThemeContext.Provider>
   );
