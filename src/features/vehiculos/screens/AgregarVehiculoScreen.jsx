@@ -6,19 +6,17 @@ import AppHeader from '../../../components/shared/AppHeader';
 import VehiculoForm from '../components/VehiculoForm';
 import { Toast, ToastManager } from '../../../components/ui/CustomToast';
 import useVehiculoStore from '../store/useVehiculoStore';
-import useAuthStore from '../../auth/store/useAuthStore';
 import { colors } from '../../../theme/theme';
 
 export default function AgregarVehiculoScreen({ navigation }) {
   const insets = useSafeAreaInsets();
-  const { user } = useAuthStore();
-  const { agregarVehiculo } = useVehiculoStore();
+  const agregarVehiculo = useVehiculoStore(s => s.agregarVehiculo);
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (data) => {
     setLoading(true);
     try {
-      await agregarVehiculo({ ...data, user_id: user.id });
+      await agregarVehiculo(data);
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       ToastManager.show({ type: 'success', text1: 'Vehículo agregado', text2: data.nombre_alias });
       navigation.goBack();

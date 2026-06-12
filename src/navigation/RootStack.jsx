@@ -10,16 +10,28 @@ import EditarDocumentoScreen from '../features/documentos/screens/EditarDocument
 import AgregarMantencionScreen from '../features/mantenciones/screens/AgregarMantencionScreen';
 import EditarMantencionScreen from '../features/mantenciones/screens/EditarMantencionScreen';
 import LoadingSpinner from '../components/shared/LoadingSpinner';
+import { registerForPushNotifications } from '../services/notifications';
 import { colors } from '../theme/theme';
+import useCategoriasService from '@/features/categorias/store/useCategoriasService';
 
 const Stack = createNativeStackNavigator();
 
 export default function RootStack() {
-  const { user, loading, initialize } = useAuthStore();
+  const user = useAuthStore(s => s.user);
+  const loading = useAuthStore(s => s.loading);
+  const initialize = useAuthStore(s => s.initialize);
+  const fetchCategoriasPredefinidas = useCategoriasService(s => s.fetchCategoriasPredefinidas)
 
   useEffect(() => {
     initialize();
   }, []);
+
+  useEffect(() => {
+    if (user) {
+      fetchCategoriasPredefinidas();
+      registerForPushNotifications(user.id);
+    }
+  }, [user?.id]);
 
   if (loading) return <LoadingSpinner />;
 

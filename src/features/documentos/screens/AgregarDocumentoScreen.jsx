@@ -11,8 +11,8 @@ import { colors } from '../../../theme/theme';
 
 export default function AgregarDocumentoScreen({ navigation }) {
   const insets = useSafeAreaInsets();
-  const { vehiculoActivo } = useVehiculoStore();
-  const { agregarDocumento } = useDocumentoStore();
+  const vehiculoActivo = useVehiculoStore(s => s.vehiculoActivo);
+  const agregarDocumento = useDocumentoStore(s => s.agregarDocumento);
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async ({ form, archivo }) => {

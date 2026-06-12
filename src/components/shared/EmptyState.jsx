@@ -1,6 +1,5 @@
 import React from 'react';
 import { View, Text } from 'react-native';
-import { CheckCircle } from 'lucide-react-native';
 import IconLucide from '../IconLucide';
 import { colors } from '../../theme/theme';
 
@@ -13,46 +12,22 @@ export default function EmptyState({
   const iconColor = positive ? colors.success : colors.textSecondary;
 
   return (
-    <View
-      style={{
-        flex: 1,
-        alignItems: 'center',
-        justifyContent: 'center',
-        paddingVertical: 60,
-        paddingHorizontal: 32,
-      }}
-    >
+    <View className="flex-1 items-center justify-center py-[60px] px-8">
       <View
-        style={{
-          width: 72,
-          height: 72,
-          borderRadius: 20,
-          backgroundColor: positive ? `${colors.success}15` : `${colors.textSecondary}15`,
-          alignItems: 'center',
-          justifyContent: 'center',
-          marginBottom: 20,
-        }}
+        className="w-[72px] h-[72px] rounded-[20px] items-center justify-center mb-5"
+        style={{ backgroundColor: positive ? `${colors.success}15` : `${colors.textSecondary}15` }}
       >
         <IconLucide name={icon} size={32} color={iconColor} />
       </View>
       <Text
-        style={{
-          color: colors.textPrimary,
-          fontSize: 17,
-          fontWeight: '600',
-          textAlign: 'center',
-          marginBottom: 8,
-        }}
+        className="text-[17px] font-semibold text-center mb-2"
+        style={{ color: colors.textPrimary }}
       >
         {title}
       </Text>
       <Text
-        style={{
-          color: colors.textSecondary,
-          fontSize: 14,
-          textAlign: 'center',
-          lineHeight: 20,
-        }}
+        className="text-sm text-center leading-5"
+        style={{ color: colors.textSecondary }}
       >
         {subtitle}
       </Text>

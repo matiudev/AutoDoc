@@ -71,7 +71,6 @@
   anio: integer,
   color: string | null,
   km_actual: integer,       // Se actualiza al registrar mantenciones
-  foto_url: string | null,
   created_at: timestamptz
 }
 ```

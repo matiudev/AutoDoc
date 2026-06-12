@@ -1,6 +1,6 @@
 import { create } from 'zustand';
-
-const uid = () => `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+import { addVehiculo, deleteVehiculo, fetchVehiculos, updateVehiculo } from '../services/vehiculosService';
+import useAuthStore from '@/features/auth/store/useAuthStore';
 
 const useVehiculoStore = create((set, get) => ({
   vehiculos: [],
@@ -9,45 +9,60 @@ const useVehiculoStore = create((set, get) => ({
   error: null,
 
   fetchVehiculos: async () => {
-    const { vehiculos, vehiculoActivo } = get();
-    if (!vehiculoActivo && vehiculos.length > 0) {
-      set({ vehiculoActivo: vehiculos[0] });
+    const user = useAuthStore.getState().user;
+
+    if (!user) {
+      throw new Error("Usuario no autenticado");
     }
+
+    const data = await fetchVehiculos(user.id)
+
+    set({ vehiculos: data })
+    if (!get().vehiculoActivo && data.length > 0) set({ vehiculoActivo: data[0] })
   },
 
   setVehiculoActivo: (vehiculo) => set({ vehiculoActivo: vehiculo }),
 
-  agregarVehiculo: (vehiculo) => {
-    const data = { id: uid(), created_at: new Date().toISOString(), ...vehiculo };
-    set((state) => ({ vehiculos: [data, ...state.vehiculos] }));
-    if (!get().vehiculoActivo) set({ vehiculoActivo: data });
-    return data;
+  agregarVehiculo: async (vehiculo) => {
+    const user = useAuthStore.getState().user;
+
+    if (!user) {
+      throw new Error("Usuario no autenticado");
+    }
+
+    const nuevo_vehiculo = await addVehiculo({ ...vehiculo, user_id: user.id });
+
+    set((state) => ({ vehiculos: [nuevo_vehiculo, ...state.vehiculos] }));
+    if (!get().vehiculoActivo) set({ vehiculoActivo: nuevo_vehiculo });
   },
 
-  editarVehiculo: (id, cambios) => {
-    let updated;
-    set((state) => {
-      const vehiculos = state.vehiculos.map((v) => {
-        if (v.id === id) {
-          updated = { ...v, ...cambios };
-          return updated;
-        }
-        return v;
-      });
+  updateVehiculo: async (vehiculo_id, cambios) => {
+    const user = useAuthStore.getState().user;
+
+    if (!user) {
+      throw new Error("Usuario no autenticado");
+    }
+
+    const vehiculoUpdate = get().vehiculos.map((vehiculo) => vehiculo_id === vehiculo.id ? { ...vehiculo, ...cambios } : vehiculo);
+    await updateVehiculo(vehiculo_id, cambios)
+
+    set((state) => ({
+      vehiculos: vehiculoUpdate,
+      vehiculoActivo: state.vehiculoActivo?.id === vehiculo_id
+        ? { ...state.vehiculoActivo, ...cambios }
+        : state.vehiculoActivo,
+    }));
+  },
+
+  borrarVehiculo: async (id) => {
+    await deleteVehiculo(id);
+
+    set(s => {
+      const vehiculos = s.vehiculos.filter(v => v.id !== id);
       return {
         vehiculos,
-        vehiculoActivo: state.vehiculoActivo?.id === id ? updated : state.vehiculoActivo,
+        vehiculoActivo: s.vehiculoActivo?.id === id ? (vehiculos[0] ?? null) : s.vehiculoActivo,
       };
-    });
-    return updated;
-  },
-
-  borrarVehiculo: (id) => {
-    set((state) => {
-      const vehiculos = state.vehiculos.filter((v) => v.id !== id);
-      const vehiculoActivo =
-        state.vehiculoActivo?.id === id ? (vehiculos[0] ?? null) : state.vehiculoActivo;
-      return { vehiculos, vehiculoActivo };
     });
   },
 

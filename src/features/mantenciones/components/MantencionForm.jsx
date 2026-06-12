@@ -5,11 +5,11 @@ import { Calendar } from 'lucide-react-native';
 import IconLucide from '../../../components/IconLucide';
 import Input from '../../../components/ui/Input';
 import Button from '../../../components/ui/Button';
-import { CATEGORIAS_PREDEFINIDAS } from '../../../constants/categorias';
 import { colors } from '../../../theme/theme';
+import useCategoriasService from '@/features/categorias/store/useCategoriasService';
 
-export default function MantencionForm({ initialValues = {}, vehiculoKm = 0, categorias = [], onSubmit, loading }) {
-  const todasCategorias = [...CATEGORIAS_PREDEFINIDAS, ...categorias.filter((c) => !c.es_predefinida)];
+export default function MantencionForm({ initialValues = {}, vehiculoKm = 0, onSubmit, loading }) {
+  const categorias_predefinidas = useCategoriasService(s => s.categorias_predefinidas)
 
   const [form, setForm] = useState({
     categoria_id: initialValues.categoria_id ?? '',
@@ -27,26 +27,46 @@ export default function MantencionForm({ initialValues = {}, vehiculoKm = 0, cat
 
   const set = (key, value) => setForm((p) => ({ ...p, [key]: value }));
 
-  const catSeleccionada = todasCategorias.find((c) => c.id === form.categoria_id);
+  const catSeleccionada = categorias_predefinidas.find((c) => c.id === form.categoria_id);
+
+  const handleKmChange = (v) => {
+    setForm((p) => {
+      const cat = categorias_predefinidas.find((c) => c.id === p.categoria_id);
+      return {
+        ...p,
+        km_al_realizar: v,
+        proximos_km: cat?.intervalo_km ? ((parseInt(v) || 0) + cat.intervalo_km).toString() : p.proximos_km,
+      };
+    });
+  };
+
+  const handleFechaRealizadaChange = (date) => {
+    setForm((p) => {
+      const cat = categorias_predefinidas.find((c) => c.id === p.categoria_id);
+      let proxima_fecha = p.proxima_fecha;
+      if (cat?.intervalo_dias) {
+        const d = new Date(date);
+        d.setDate(d.getDate() + cat.intervalo_dias);
+        proxima_fecha = d.toISOString().split('T')[0];
+      }
+      return { ...p, fecha_realizada: date, proxima_fecha };
+    });
+  };
 
   const handleCategoriaSelect = (cat) => {
-    const proxKm = cat.intervalo_km
-      ? (parseInt(form.km_al_realizar) || vehiculoKm) + cat.intervalo_km
-      : null;
-    const proxFecha = cat.intervalo_dias
-      ? (() => {
-          const d = new Date(form.fecha_realizada || new Date());
-          d.setDate(d.getDate() + cat.intervalo_dias);
-          return d.toISOString().split('T')[0];
-        })()
-      : null;
+    setForm((p) => {
+      const kmBase = parseInt(p.km_al_realizar) || 0;
+      const proximos_km = cat.intervalo_km ? (kmBase + cat.intervalo_km).toString() : '';
 
-    setForm((p) => ({
-      ...p,
-      categoria_id: cat.id,
-      proximos_km: proxKm?.toString() ?? '',
-      proxima_fecha: proxFecha,
-    }));
+      let proxima_fecha = null;
+      if (cat.intervalo_dias && p.fecha_realizada) {
+        const d = new Date(p.fecha_realizada);
+        d.setDate(d.getDate() + cat.intervalo_dias);
+        proxima_fecha = d.toISOString().split('T')[0];
+      }
+
+      return { ...p, categoria_id: cat.id, proximos_km, proxima_fecha };
+    });
   };
 
   const formatDate = (d) =>
@@ -74,7 +94,7 @@ export default function MantencionForm({ initialValues = {}, vehiculoKm = 0, cat
         Categoría
       </Text>
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
-        {todasCategorias.map((cat) => (
+        {categorias_predefinidas.map((cat) => (
           <TouchableOpacity
             key={cat.id}
             onPress={() => handleCategoriaSelect(cat)}
@@ -107,7 +127,7 @@ export default function MantencionForm({ initialValues = {}, vehiculoKm = 0, cat
           <Text style={{ color: colors.textPrimary, fontSize: 13, fontWeight: '500' }}>{formatDate(form.fecha_realizada)}</Text>
         </TouchableOpacity>
         <View style={{ flex: 1 }}>
-          <Input label="Km al realizar" value={form.km_al_realizar} onChangeText={(v) => set('km_al_realizar', v)} keyboardType="numeric" placeholder="80000" />
+          <Input label="Km al realizar" value={form.km_al_realizar} onChangeText={handleKmChange} keyboardType="numeric" placeholder="80000" />
         </View>
       </View>
 
@@ -116,7 +136,7 @@ export default function MantencionForm({ initialValues = {}, vehiculoKm = 0, cat
           value={new Date(form.fecha_realizada)}
           mode="date"
           display="default"
-          onChange={(_, d) => { setShowFechaRealizada(false); if (d) set('fecha_realizada', d.toISOString().split('T')[0]); }}
+          onChange={(_, d) => { setShowFechaRealizada(false); if (d) handleFechaRealizadaChange(d.toISOString().split('T')[0]); }}
         />
       )}
 

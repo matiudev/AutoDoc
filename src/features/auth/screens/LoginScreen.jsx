@@ -10,7 +10,11 @@ import { colors } from '../../../theme/theme';
 
 export default function LoginScreen() {
   const insets = useSafeAreaInsets();
-  const { login, register, loading, error, clearError } = useAuthStore();
+  const login = useAuthStore(s => s.login);
+  const register = useAuthStore(s => s.register);
+  const loading = useAuthStore(s => s.loading);
+  const error = useAuthStore(s => s.error);
+  const clearError = useAuthStore(s => s.clearError);
 
   const [mode, setMode] = useState('login'); // 'login' | 'register'
   const [email, setEmail] = useState('');

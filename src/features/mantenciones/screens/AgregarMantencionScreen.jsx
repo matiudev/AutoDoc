@@ -11,14 +11,15 @@ import { colors } from '../../../theme/theme';
 
 export default function AgregarMantencionScreen({ navigation }) {
   const insets = useSafeAreaInsets();
-  const { vehiculoActivo, actualizarKm } = useVehiculoStore();
-  const { agregarMantencion } = useMantencionStore();
+  const vehiculoActivo = useVehiculoStore(s => s.vehiculoActivo);
+  const actualizarKm = useVehiculoStore(s => s.actualizarKm);
+  const addMantencion = useMantencionStore(s => s.addMantencion);
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (data) => {
     setLoading(true);
     try {
-      await agregarMantencion({ ...data, vehiculo_id: vehiculoActivo.id });
+      await addMantencion(data);
 
       if (data.km_al_realizar > (vehiculoActivo.km_actual ?? 0)) {
         await actualizarKm(vehiculoActivo.id, data.km_al_realizar);

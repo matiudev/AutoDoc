@@ -14,13 +14,16 @@ import { colors } from '../theme/theme';
 
 export default function MantencionesScreen({ navigation }) {
   const insets = useSafeAreaInsets();
-  const { vehiculoActivo } = useVehiculoStore();
-  const { mantenciones, loading, fetchMantenciones } = useMantencionStore();
+  const vehiculoActivo = useVehiculoStore(s => s.vehiculoActivo);
+  const mantenciones = useMantencionStore(s => s.mantenciones);
+  const loading = useMantencionStore(s => s.loading);
+  const fetchMantenciones = useMantencionStore(s => s.fetchMantenciones);
   const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     if (vehiculoActivo) fetchMantenciones(vehiculoActivo.id);
   }, [vehiculoActivo]);
+
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -29,23 +32,19 @@ export default function MantencionesScreen({ navigation }) {
   }, [vehiculoActivo]);
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.bgBase, paddingTop: insets.top + 8 }}>
+    <View className="flex-1" style={{ backgroundColor: colors.bgBase, paddingTop: insets.top + 8 }}>
       <StatusBar barStyle="light-content" backgroundColor={colors.bgBase} />
 
-      <View style={{ paddingHorizontal: 20 }}>
+      <View className="px-5">
         <AppHeader
           title="Mantenciones"
           subtitle={vehiculoActivo?.nombre_alias}
           rightElement={
             <TouchableOpacity
               onPress={() => navigation.navigate('AgregarMantencion')}
+              className="w-[42px] h-[42px] rounded-[13px] items-center justify-center"
               style={{
-                width: 42,
-                height: 42,
-                borderRadius: 13,
                 backgroundColor: colors.accent,
-                alignItems: 'center',
-                justifyContent: 'center',
                 shadowColor: colors.accent,
                 shadowOffset: { width: 0, height: 4 },
                 shadowOpacity: 0.4,
@@ -60,7 +59,7 @@ export default function MantencionesScreen({ navigation }) {
       </View>
 
       {loading && !refreshing ? (
-        <View style={{ paddingHorizontal: 20 }}>
+        <View className="px-5">
           <SkeletonList count={4} />
         </View>
       ) : (

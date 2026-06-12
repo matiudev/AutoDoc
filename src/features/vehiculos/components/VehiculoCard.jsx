@@ -31,11 +31,7 @@ export default function VehiculoCard({ vehiculo, activo = false, onPress }) {
           overflow: 'hidden',
         }}
       >
-        {vehiculo.foto_url ? (
-          <Image source={{ uri: vehiculo.foto_url }} style={{ width: 52, height: 52 }} />
-        ) : (
-          <Car size={24} color={activo ? colors.accent : colors.textSecondary} />
-        )}
+        <Car size={24} color={activo ? colors.accent : colors.textSecondary} />
       </View>
 
       <View style={{ flex: 1 }}>

@@ -4,6 +4,7 @@ import Input from '../../../components/ui/Input';
 import Button from '../../../components/ui/Button';
 import { colors } from '../../../theme/theme';
 import { COLORES_VEHICULO } from '../../../constants/colores';
+import SliderConfirm from '@/components/shared/SliderConfirm';
 
 export default function VehiculoForm({ initialValues = {}, onSubmit, loading }) {
   const [form, setForm] = useState({
@@ -85,7 +86,7 @@ export default function VehiculoForm({ initialValues = {}, onSubmit, loading }) 
         </View>
       </View>
 
-      <Button label="Guardar vehículo" onPress={handleSubmit} loading={loading} disabled={!isValid} />
+      <SliderConfirm onConfirm={handleSubmit} label="Guardar Vehículo" loading={loading} variant="primary"  />
     </ScrollView>
   );
 }

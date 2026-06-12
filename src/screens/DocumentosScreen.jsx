@@ -1,5 +1,5 @@
-import React, { useEffect, useCallback } from 'react';
-import { View, Text, FlatList, TouchableOpacity, RefreshControl, StatusBar } from 'react-native';
+import React, { useEffect, useCallback, useState } from 'react';
+import { View, FlatList, TouchableOpacity, RefreshControl, StatusBar } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Plus } from 'lucide-react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
@@ -10,14 +10,15 @@ import DocumentoViewer from '../features/documentos/components/DocumentoViewer';
 import { SkeletonList } from '../components/ui/Skeleton';
 import EmptyState from '../components/shared/EmptyState';
 import AppHeader from '../components/shared/AppHeader';
-import { colors } from '../theme/theme';
-import { useState } from 'react';
 import { Toast } from '../components/ui/CustomToast';
+import { colors } from '../theme/theme';
 
 export default function DocumentosScreen({ navigation }) {
   const insets = useSafeAreaInsets();
-  const { vehiculoActivo } = useVehiculoStore();
-  const { documentos, loading, fetchDocumentos } = useDocumentoStore();
+  const vehiculoActivo = useVehiculoStore(s => s.vehiculoActivo);
+  const documentos = useDocumentoStore(s => s.documentos);
+  const loading = useDocumentoStore(s => s.loading);
+  const fetchDocumentos = useDocumentoStore(s => s.fetchDocumentos);
   const [viewer, setViewer] = useState({ visible: false, url: null, tipo: null });
   const [refreshing, setRefreshing] = useState(false);
 
@@ -32,23 +33,19 @@ export default function DocumentosScreen({ navigation }) {
   }, [vehiculoActivo]);
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.bgBase, paddingTop: insets.top + 8 }}>
+    <View className="flex-1" style={{ backgroundColor: colors.bgBase, paddingTop: insets.top + 8 }}>
       <StatusBar barStyle="light-content" backgroundColor={colors.bgBase} />
 
-      <View style={{ paddingHorizontal: 20 }}>
+      <View className="px-5">
         <AppHeader
           title="Documentos"
           subtitle={vehiculoActivo?.nombre_alias}
           rightElement={
             <TouchableOpacity
               onPress={() => navigation.navigate('AgregarDocumento')}
+              className="w-[42px] h-[42px] rounded-[13px] items-center justify-center"
               style={{
-                width: 42,
-                height: 42,
-                borderRadius: 13,
                 backgroundColor: colors.accent,
-                alignItems: 'center',
-                justifyContent: 'center',
                 shadowColor: colors.accent,
                 shadowOffset: { width: 0, height: 4 },
                 shadowOpacity: 0.4,
@@ -63,7 +60,7 @@ export default function DocumentosScreen({ navigation }) {
       </View>
 
       {loading && !refreshing ? (
-        <View style={{ paddingHorizontal: 20 }}>
+        <View className="px-5">
           <SkeletonList count={4} />
         </View>
       ) : (

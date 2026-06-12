@@ -1,4 +1,7 @@
+import useAuthStore from '@/features/auth/store/useAuthStore';
 import { create } from 'zustand';
+import { addMantencion, fetchMantenciones } from '../services/mantencionesService';
+import useVehiculoStore from '@/features/vehiculos/store/useVehiculoStore';
 
 const uid = () => `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
 
@@ -8,13 +11,28 @@ const useMantencionStore = create((set) => ({
   error: null,
 
   fetchMantenciones: async (vehiculoId) => {
-    // Local state — no async operation needed
+    const user = useAuthStore.getState().user
+
+    if (!user) {
+      throw new Error("Usuario no autenticado");
+    }
+
+    const data = await fetchMantenciones(vehiculoId)
+
+    set({ mantenciones: data })
   },
 
-  agregarMantencion: (mantencion) => {
-    const data = { id: uid(), created_at: new Date().toISOString(), ...mantencion };
-    set((state) => ({ mantenciones: [data, ...state.mantenciones] }));
-    return data;
+  addMantencion: async (mantencion) => {
+    const user = useAuthStore.getState().user
+
+    if (!user) {
+      throw new Error("Usuario no autenticado");
+    }
+
+    const vehiculoActivo = useVehiculoStore.getState().vehiculoActivo
+    const data = await addMantencion({...mantencion, vehiculo_id: vehiculoActivo.id})
+
+    set((state) => ({ mantenciones: [...state.mantenciones, data]}))
   },
 
   editarMantencion: (id, cambios) => {

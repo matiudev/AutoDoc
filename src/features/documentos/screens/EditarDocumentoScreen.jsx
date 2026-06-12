@@ -13,7 +13,8 @@ import { colors } from '../../../theme/theme';
 export default function EditarDocumentoScreen({ route, navigation }) {
   const insets = useSafeAreaInsets();
   const { documento } = route.params;
-  const { editarDocumento, borrarDocumento } = useDocumentoStore();
+  const editarDocumento = useDocumentoStore(s => s.editarDocumento);
+  const borrarDocumento = useDocumentoStore(s => s.borrarDocumento);
   const [loading, setLoading] = useState(false);
   const [showDelete, setShowDelete] = useState(false);
 

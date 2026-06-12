@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, StatusBar, Image, Modal, Pressable } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { LogOut, ChevronRight, Car, Plus, Settings, User } from 'lucide-react-native';
+import { LogOut, ChevronRight, Plus, User } from 'lucide-react-native';
 import useAuthStore from '../features/auth/store/useAuthStore';
 import useVehiculoStore from '../features/vehiculos/store/useVehiculoStore';
 import VehiculoCard from '../features/vehiculos/components/VehiculoCard';
@@ -15,37 +15,29 @@ function SettingRow({ icon: Icon, label, sublabel, onPress, danger = false }) {
     <TouchableOpacity
       onPress={onPress}
       activeOpacity={0.75}
+      className="flex-row items-center gap-[14px] py-[15px] px-4 rounded-[14px] mb-2 border"
       style={{
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 14,
-        paddingVertical: 15,
-        paddingHorizontal: 16,
         backgroundColor: colors.bgSurface,
-        borderRadius: 14,
-        marginBottom: 8,
-        borderWidth: 1,
         borderColor: danger ? `${colors.danger}25` : colors.borderDefault,
       }}
     >
       <View
-        style={{
-          width: 38,
-          height: 38,
-          borderRadius: 11,
-          backgroundColor: danger ? `${colors.danger}15` : colors.bgElevated,
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
+        className="w-[38px] h-[38px] rounded-[11px] items-center justify-center"
+        style={{ backgroundColor: danger ? `${colors.danger}15` : colors.bgElevated }}
       >
         <Icon size={18} color={danger ? colors.danger : colors.textSecondary} />
       </View>
-      <View style={{ flex: 1 }}>
-        <Text style={{ color: danger ? colors.danger : colors.textPrimary, fontSize: 15, fontWeight: '500' }}>
+      <View className="flex-1">
+        <Text
+          className="text-[15px] font-medium"
+          style={{ color: danger ? colors.danger : colors.textPrimary }}
+        >
           {label}
         </Text>
         {sublabel && (
-          <Text style={{ color: colors.textSecondary, fontSize: 12, marginTop: 2 }}>{sublabel}</Text>
+          <Text className="text-xs mt-0.5" style={{ color: colors.textSecondary }}>
+            {sublabel}
+          </Text>
         )}
       </View>
       <ChevronRight size={16} color={colors.textSecondary} />
@@ -55,8 +47,10 @@ function SettingRow({ icon: Icon, label, sublabel, onPress, danger = false }) {
 
 export default function PerfilScreen({ navigation }) {
   const insets = useSafeAreaInsets();
-  const { user, logout } = useAuthStore();
-  const { vehiculos, vehiculoActivo, setVehiculoActivo } = useVehiculoStore();
+  const user = useAuthStore(s => s.user);
+  const logout = useAuthStore(s => s.logout);
+  const vehiculos = useVehiculoStore(s => s.vehiculos);
+  const vehiculoActivo = useVehiculoStore(s => s.vehiculoActivo);
   const [showLogout, setShowLogout] = useState(false);
 
   const handleLogout = async () => {
@@ -71,7 +65,7 @@ export default function PerfilScreen({ navigation }) {
   const nombre = user?.user_metadata?.full_name ?? user?.email ?? 'Usuario';
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.bgBase, paddingTop: insets.top + 8 }}>
+    <View className="flex-1" style={{ backgroundColor: colors.bgBase, paddingTop: insets.top + 8 }}>
       <StatusBar barStyle="light-content" backgroundColor={colors.bgBase} />
 
       <ScrollView
@@ -82,33 +76,34 @@ export default function PerfilScreen({ navigation }) {
 
         {/* User card */}
         <View
-          style={{
-            backgroundColor: colors.bgSurface,
-            borderRadius: 20,
-            padding: 20,
-            flexDirection: 'row',
-            alignItems: 'center',
-            gap: 16,
-            borderWidth: 1,
-            borderColor: colors.borderDefault,
-            marginBottom: 28,
-          }}
+          className="rounded-[20px] p-5 flex-row items-center gap-4 border mb-7"
+          style={{ backgroundColor: colors.bgSurface, borderColor: colors.borderDefault }}
         >
           {avatarUrl ? (
-            <Image source={{ uri: avatarUrl }} style={{ width: 56, height: 56, borderRadius: 16 }} />
+            <Image source={{ uri: avatarUrl }} className="w-14 h-14 rounded-2xl" />
           ) : (
-            <View style={{ width: 56, height: 56, borderRadius: 16, backgroundColor: `${colors.accent}20`, alignItems: 'center', justifyContent: 'center' }}>
+            <View
+              className="w-14 h-14 rounded-2xl items-center justify-center"
+              style={{ backgroundColor: `${colors.accent}20` }}
+            >
               <User size={26} color={colors.accentSoft} />
             </View>
           )}
-          <View style={{ flex: 1 }}>
-            <Text style={{ color: colors.textPrimary, fontSize: 17, fontWeight: '700' }}>{nombre}</Text>
-            <Text style={{ color: colors.textSecondary, fontSize: 13, marginTop: 3 }}>{user?.email}</Text>
+          <View className="flex-1">
+            <Text className="text-[17px] font-bold" style={{ color: colors.textPrimary }}>
+              {nombre}
+            </Text>
+            <Text className="text-[13px] mt-[3px]" style={{ color: colors.textSecondary }}>
+              {user?.email}
+            </Text>
           </View>
         </View>
 
         {/* Vehículos */}
-        <Text style={{ color: colors.textSecondary, fontSize: 12, fontWeight: '600', letterSpacing: 0.8, textTransform: 'uppercase', marginBottom: 12 }}>
+        <Text
+          className="text-xs font-semibold tracking-[0.8px] uppercase mb-3"
+          style={{ color: colors.textSecondary }}
+        >
           Mis Vehículos
         </Text>
 
@@ -123,27 +118,20 @@ export default function PerfilScreen({ navigation }) {
 
         <TouchableOpacity
           onPress={() => navigation.navigate('AgregarVehiculo')}
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: 8,
-            marginBottom: 28,
-            paddingVertical: 14,
-            borderRadius: 14,
-            borderWidth: 1,
-            borderColor: colors.borderDefault,
-            borderStyle: 'dashed',
-          }}
+          className="flex-row items-center justify-center gap-2 mb-7 py-3.5 rounded-[14px] border border-dashed"
+          style={{ borderColor: colors.borderDefault }}
         >
           <Plus size={18} color={colors.accentSoft} />
-          <Text style={{ color: colors.accentSoft, fontWeight: '600', fontSize: 14 }}>
+          <Text className="font-semibold text-sm" style={{ color: colors.accentSoft }}>
             Agregar vehículo
           </Text>
         </TouchableOpacity>
 
-        {/* Settings */}
-        <Text style={{ color: colors.textSecondary, fontSize: 12, fontWeight: '600', letterSpacing: 0.8, textTransform: 'uppercase', marginBottom: 12 }}>
+        {/* Configuración */}
+        <Text
+          className="text-xs font-semibold tracking-[0.8px] uppercase mb-3"
+          style={{ color: colors.textSecondary }}
+        >
           Configuración
         </Text>
 
@@ -157,20 +145,19 @@ export default function PerfilScreen({ navigation }) {
 
       {/* Logout confirmation */}
       <Modal visible={showLogout} transparent animationType="slide" onRequestClose={() => setShowLogout(false)}>
-        <Pressable style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.6)' }} onPress={() => setShowLogout(false)} />
+        <Pressable className="flex-1" style={{ backgroundColor: 'rgba(0,0,0,0.6)' }} onPress={() => setShowLogout(false)} />
         <View
+          className="absolute bottom-0 left-0 right-0 rounded-t-3xl p-6 border-t"
           style={{
-            position: 'absolute', bottom: 0, left: 0, right: 0,
             backgroundColor: colors.bgSurface,
-            borderTopLeftRadius: 24, borderTopRightRadius: 24,
-            padding: 24, paddingBottom: insets.bottom + 24,
-            borderTopWidth: 1, borderTopColor: colors.borderDefault,
+            paddingBottom: insets.bottom + 24,
+            borderTopColor: colors.borderDefault,
           }}
         >
-          <Text style={{ color: colors.textPrimary, fontSize: 18, fontWeight: '700', marginBottom: 8 }}>
+          <Text className="text-lg font-bold mb-2" style={{ color: colors.textPrimary }}>
             Cerrar sesión
           </Text>
-          <Text style={{ color: colors.textSecondary, fontSize: 14, marginBottom: 24 }}>
+          <Text className="text-sm mb-6" style={{ color: colors.textSecondary }}>
             ¿Estás seguro que querés cerrar sesión?
           </Text>
           <SliderConfirm onConfirm={handleLogout} label="Deslizá para cerrar sesión" />

@@ -13,14 +13,15 @@ import { Trash2 } from 'lucide-react-native';
 export default function EditarVehiculoScreen({ route, navigation }) {
   const insets = useSafeAreaInsets();
   const { vehiculo } = route.params;
-  const { editarVehiculo, borrarVehiculo } = useVehiculoStore();
+  const updateVehiculo = useVehiculoStore(s => s.updateVehiculo);
+  const borrarVehiculo = useVehiculoStore(s => s.borrarVehiculo);
   const [loading, setLoading] = useState(false);
   const [showDelete, setShowDelete] = useState(false);
 
   const handleSubmit = async (data) => {
     setLoading(true);
     try {
-      await editarVehiculo(vehiculo.id, data);
+      await updateVehiculo(vehiculo.id, data);
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       ToastManager.show({ type: 'success', text1: 'Vehículo actualizado' });
       navigation.goBack();
@@ -66,7 +67,7 @@ export default function EditarVehiculoScreen({ route, navigation }) {
           <Text style={{ color: colors.textSecondary, fontSize: 14, marginBottom: 24 }}>
             Se eliminarán también todos los documentos y mantenciones asociados.
           </Text>
-          <SliderConfirm onConfirm={handleDelete} label="Deslizá para eliminar" />
+          <SliderConfirm onConfirm={handleDelete} label="Deslizá para eliminar" loading={loading} />
         </View>
       </Modal>
 

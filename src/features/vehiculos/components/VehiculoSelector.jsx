@@ -8,7 +8,9 @@ import { colors } from '../../../theme/theme';
 
 export default function VehiculoSelector({ visible, onClose }) {
   const navigation = useNavigation();
-  const { vehiculos, vehiculoActivo, setVehiculoActivo } = useVehiculoStore();
+  const vehiculos = useVehiculoStore(s => s.vehiculos);
+  const vehiculoActivo = useVehiculoStore(s => s.vehiculoActivo);
+  const setVehiculoActivo = useVehiculoStore(s => s.setVehiculoActivo);
 
   const seleccionar = (vehiculo) => {
     setVehiculoActivo(vehiculo);

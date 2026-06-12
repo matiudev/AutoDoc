@@ -14,8 +14,9 @@ import { colors } from '../../../theme/theme';
 export default function EditarMantencionScreen({ route, navigation }) {
   const insets = useSafeAreaInsets();
   const { mantencion } = route.params;
-  const { vehiculoActivo } = useVehiculoStore();
-  const { editarMantencion, borrarMantencion } = useMantencionStore();
+  const vehiculoActivo = useVehiculoStore(s => s.vehiculoActivo);
+  const editarMantencion = useMantencionStore(s => s.editarMantencion);
+  const borrarMantencion = useMantencionStore(s => s.borrarMantencion);
   const [loading, setLoading] = useState(false);
   const [showDelete, setShowDelete] = useState(false);
 

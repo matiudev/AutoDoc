@@ -22,7 +22,7 @@ const TABS = [
 
 export default function TabNavigator() {
   const insets = useSafeAreaInsets();
-  const { alertas } = useAlertaStore();
+  const alertas = useAlertaStore(s => s.alertas);
 
   return (
     <Tab.Navigator

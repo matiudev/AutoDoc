@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, RefreshControl, StatusBar } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { ChevronDown, Gauge, Plus, FileText, Wrench, Bell } from 'lucide-react-native';
+import { ChevronDown, Gauge, Plus } from 'lucide-react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import useVehiculoStore from '../features/vehiculos/store/useVehiculoStore';
 import useAlertaStore from '../features/alertas/store/useAlertaStore';
@@ -11,18 +11,18 @@ import VehiculoSelector from '../features/vehiculos/components/VehiculoSelector'
 import AlertaItem from '../features/alertas/components/AlertaItem';
 import { SkeletonList } from '../components/ui/Skeleton';
 import EmptyState from '../components/shared/EmptyState';
-import { colors } from '../theme/theme';
 import DocumentoCard from '../features/documentos/components/DocumentoCard';
 import MantencionCard from '../features/mantenciones/components/MantencionCard';
 import { Toast } from '../components/ui/CustomToast';
+import { colors } from '../theme/theme';
 
 function SectionTitle({ title, action, onAction }) {
   return (
-    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12, marginTop: 24 }}>
-      <Text style={{ color: colors.textPrimary, fontSize: 16, fontWeight: '700' }}>{title}</Text>
+    <View className="flex-row items-center justify-between mb-3 mt-6">
+      <Text className="text-base font-bold" style={{ color: colors.textPrimary }}>{title}</Text>
       {action && (
         <TouchableOpacity onPress={onAction}>
-          <Text style={{ color: colors.accentSoft, fontSize: 13, fontWeight: '600' }}>{action}</Text>
+          <Text className="text-[13px] font-semibold" style={{ color: colors.accentSoft }}>{action}</Text>
         </TouchableOpacity>
       )}
     </View>
@@ -31,9 +31,15 @@ function SectionTitle({ title, action, onAction }) {
 
 export default function DashboardScreen({ navigation }) {
   const insets = useSafeAreaInsets();
-  const { user } = useAuthStore();
-  const { vehiculoActivo, fetchVehiculos } = useVehiculoStore();
-  const { proximosVencimientos, proximasMantenciones, alertas, loading, fetchTodo, descartar } = useAlertaStore();
+  const user = useAuthStore(s => s.user);
+  const vehiculoActivo = useVehiculoStore(s => s.vehiculoActivo);
+  const fetchVehiculos = useVehiculoStore(s => s.fetchVehiculos);
+  const proximosVencimientos = useAlertaStore(s => s.proximosVencimientos);
+  const proximasMantenciones = useAlertaStore(s => s.proximasMantenciones);
+  const alertas = useAlertaStore(s => s.alertas);
+  const loading = useAlertaStore(s => s.loading);
+  const fetchTodo = useAlertaStore(s => s.fetchTodo);
+  const descartar = useAlertaStore(s => s.descartar);
   const [showSelector, setShowSelector] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -55,31 +61,30 @@ export default function DashboardScreen({ navigation }) {
   const sinProblemas = !loading && proximosVencimientos.length === 0 && proximasMantenciones.length === 0;
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.bgBase }}>
+    <View className="flex-1" style={{ backgroundColor: colors.bgBase }}>
       <StatusBar barStyle="light-content" backgroundColor={colors.bgBase} />
 
       {/* Header hero */}
       <LinearGradient
         colors={[colors.gradientHeroStart, colors.gradientHeroEnd, colors.bgBase]}
-        style={{
-          paddingTop: insets.top + 16,
-          paddingHorizontal: 20,
-          paddingBottom: 32,
-        }}
+        style={{ paddingTop: insets.top + 16, paddingHorizontal: 20, paddingBottom: 32 }}
       >
-        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+        <View className="flex-row items-center justify-between mb-5">
           <View>
-            <Text style={{ color: 'rgba(255,255,255,0.6)', fontSize: 12, letterSpacing: 0.8, textTransform: 'uppercase' }}>
+            <Text className="text-xs tracking-[0.8px] uppercase" style={{ color: 'rgba(255,255,255,0.6)' }}>
               Bienvenido
             </Text>
-            <Text style={{ color: '#fff', fontSize: 18, fontWeight: '700', marginTop: 2 }}>
+            <Text className="text-lg font-bold mt-0.5" style={{ color: '#fff' }}>
               {user?.user_metadata?.name?.split(' ')[0] ?? 'AutoDoc'}
             </Text>
           </View>
 
           {totalAlertas > 0 && (
-            <View style={{ backgroundColor: `${colors.danger}25`, borderRadius: 12, paddingHorizontal: 12, paddingVertical: 6, borderWidth: 1, borderColor: `${colors.danger}40` }}>
-              <Text style={{ color: colors.danger, fontSize: 12, fontWeight: '700' }}>
+            <View
+              className="rounded-xl px-3 py-1.5 border"
+              style={{ backgroundColor: `${colors.danger}25`, borderColor: `${colors.danger}40` }}
+            >
+              <Text className="text-xs font-bold" style={{ color: colors.danger }}>
                 {totalAlertas} alerta{totalAlertas !== 1 ? 's' : ''}
               </Text>
             </View>
@@ -89,26 +94,19 @@ export default function DashboardScreen({ navigation }) {
         {vehiculoActivo ? (
           <TouchableOpacity
             onPress={() => setShowSelector(true)}
-            style={{
-              backgroundColor: 'rgba(255,255,255,0.12)',
-              borderRadius: 18,
-              padding: 18,
-              borderWidth: 1,
-              borderColor: 'rgba(255,255,255,0.15)',
-              flexDirection: 'row',
-              alignItems: 'center',
-            }}
+            className="rounded-[18px] p-[18px] border flex-row items-center"
+            style={{ backgroundColor: 'rgba(255,255,255,0.12)', borderColor: 'rgba(255,255,255,0.15)' }}
           >
-            <View style={{ flex: 1 }}>
-              <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: 11, letterSpacing: 0.8, textTransform: 'uppercase', marginBottom: 4 }}>
+            <View className="flex-1">
+              <Text className="text-[11px] tracking-[0.8px] uppercase mb-1" style={{ color: 'rgba(255,255,255,0.7)' }}>
                 Vehículo activo
               </Text>
-              <Text style={{ color: '#fff', fontSize: 22, fontWeight: '800', letterSpacing: -0.5, marginBottom: 6 }}>
+              <Text className="text-[22px] font-extrabold tracking-[-0.5px] mb-1.5" style={{ color: '#fff' }}>
                 {vehiculoActivo.nombre_alias}
               </Text>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+              <View className="flex-row items-center gap-[5px]">
                 <Gauge size={13} color="rgba(255,255,255,0.7)" />
-                <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: 13 }}>
+                <Text className="text-[13px]" style={{ color: 'rgba(255,255,255,0.7)' }}>
                   {vehiculoActivo.km_actual?.toLocaleString('es-CL')} km · {vehiculoActivo.marca} {vehiculoActivo.modelo} {vehiculoActivo.anio}
                 </Text>
               </View>
@@ -118,19 +116,11 @@ export default function DashboardScreen({ navigation }) {
         ) : (
           <TouchableOpacity
             onPress={() => navigation.navigate('AgregarVehiculo')}
-            style={{
-              backgroundColor: 'rgba(255,255,255,0.1)',
-              borderRadius: 18,
-              padding: 20,
-              borderWidth: 1,
-              borderColor: 'rgba(255,255,255,0.2)',
-              borderStyle: 'dashed',
-              alignItems: 'center',
-              gap: 8,
-            }}
+            className="rounded-[18px] p-5 border border-dashed items-center gap-2"
+            style={{ backgroundColor: 'rgba(255,255,255,0.1)', borderColor: 'rgba(255,255,255,0.2)' }}
           >
             <Plus size={24} color="rgba(255,255,255,0.7)" />
-            <Text style={{ color: 'rgba(255,255,255,0.7)', fontWeight: '600', fontSize: 15 }}>
+            <Text className="font-semibold text-[15px]" style={{ color: 'rgba(255,255,255,0.7)' }}>
               Agregar tu primer vehículo
             </Text>
           </TouchableOpacity>

@@ -1,14 +1,5 @@
-import React from 'react';
-import { View, Text, Dimensions } from 'react-native';
-import { Gesture, GestureDetector } from 'react-native-gesture-handler';
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withSpring,
-  runOnJS,
-  interpolate,
-  Extrapolation,
-} from 'react-native-reanimated';
+import React, { useRef, useEffect } from 'react';
+import { View, Animated, PanResponder, Dimensions, ActivityIndicator } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { ChevronRight } from 'lucide-react-native';
 import { colors } from '../../theme/theme';
@@ -16,116 +7,139 @@ import { colors } from '../../theme/theme';
 const THUMB_SIZE = 52;
 const SLIDER_HEIGHT = 60;
 
-export default function SliderConfirm({ onConfirm, label = 'Deslizá para eliminar' }) {
+export default function SliderConfirm({ onConfirm, label = 'Deslizá para eliminar', loading = false, variant = 'danger' }) {
   const { width: SCREEN_WIDTH } = Dimensions.get('window');
   const TRACK_WIDTH = SCREEN_WIDTH - 48;
   const MAX_DRAG = TRACK_WIDTH - THUMB_SIZE - 8;
 
-  const translateX = useSharedValue(0);
-  const confirmed = useSharedValue(false);
+  const color = variant === 'primary' ? colors.accent : colors.danger;
 
-  const triggerHaptic = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
-  };
+  const translateX = useRef(new Animated.Value(0)).current;
+  const confirmedRef = useRef(false);
+  const onConfirmRef = useRef(onConfirm);
+  const loadingRef = useRef(loading);
 
-  const pan = Gesture.Pan()
-    .onUpdate((event) => {
-      const next = event.translationX;
-      translateX.value = Math.max(0, Math.min(next, MAX_DRAG));
-    })
-    .onEnd(() => {
-      if (translateX.value >= MAX_DRAG * 0.9) {
-        translateX.value = withSpring(MAX_DRAG);
-        if (!confirmed.value) {
-          confirmed.value = true;
-          runOnJS(triggerHaptic)();
-          runOnJS(onConfirm)();
+  useEffect(() => { onConfirmRef.current = onConfirm; }, [onConfirm]);
+  useEffect(() => { loadingRef.current = loading; }, [loading]);
+
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => !loadingRef.current,
+      onMoveShouldSetPanResponder: (_, gs) => !loadingRef.current && Math.abs(gs.dx) > Math.abs(gs.dy),
+      onPanResponderMove: (_, gs) => {
+        if (loadingRef.current) return;
+        translateX.setValue(Math.max(0, Math.min(gs.dx, MAX_DRAG)));
+      },
+      onPanResponderRelease: (_, gs) => {
+        if (loadingRef.current) return;
+        const current = Math.max(0, Math.min(gs.dx, MAX_DRAG));
+        if (current >= MAX_DRAG * 0.9) {
+          Animated.spring(translateX, { toValue: MAX_DRAG, useNativeDriver: false }).start();
+          if (!confirmedRef.current) {
+            confirmedRef.current = true;
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+            onConfirmRef.current();
+          }
+        } else {
+          Animated.spring(translateX, { toValue: 0, useNativeDriver: false }).start();
+          confirmedRef.current = false;
         }
-      } else {
-        translateX.value = withSpring(0);
-        confirmed.value = false;
-      }
-    });
+      },
+    })
+  ).current;
 
-  const thumbStyle = useAnimatedStyle(() => ({
-    transform: [{ translateX: translateX.value }],
-  }));
+  const labelOpacity = translateX.interpolate({
+    inputRange: [0, MAX_DRAG * 0.4],
+    outputRange: [1, 0],
+    extrapolate: 'clamp',
+  });
 
-  const labelOpacity = useAnimatedStyle(() => ({
-    opacity: interpolate(translateX.value, [0, MAX_DRAG * 0.4], [1, 0], Extrapolation.CLAMP),
-  }));
+  const progressWidth = translateX.interpolate({
+    inputRange: [0, MAX_DRAG],
+    outputRange: [THUMB_SIZE + 4, TRACK_WIDTH],
+    extrapolate: 'clamp',
+  });
 
-  const progressStyle = useAnimatedStyle(() => ({
-    width: translateX.value + THUMB_SIZE + 4,
-    opacity: interpolate(translateX.value, [0, MAX_DRAG], [0.15, 0.35], Extrapolation.CLAMP),
-  }));
+  const progressOpacity = translateX.interpolate({
+    inputRange: [0, MAX_DRAG],
+    outputRange: [0.15, 0.35],
+    extrapolate: 'clamp',
+  });
 
   return (
     <View
       style={{
         height: SLIDER_HEIGHT,
-        backgroundColor: `${colors.danger}20`,
+        backgroundColor: loading ? `${colors.textSecondary}15` : `${color}20`,
         borderRadius: SLIDER_HEIGHT / 2,
         borderWidth: 1,
-        borderColor: `${colors.danger}40`,
+        borderColor: loading ? `${colors.textSecondary}30` : `${color}40`,
         overflow: 'hidden',
         justifyContent: 'center',
       }}
     >
-      <Animated.View
-        style={[
-          {
+      {!loading && (
+        <Animated.View
+          style={{
             position: 'absolute',
             left: 0,
             top: 0,
             height: '100%',
-            backgroundColor: colors.danger,
+            width: progressWidth,
+            opacity: progressOpacity,
+            backgroundColor: color,
             borderRadius: SLIDER_HEIGHT / 2,
-          },
-          progressStyle,
-        ]}
-      />
+          }}
+        />
+      )}
 
-      <Animated.Text
-        style={[
-          {
+      {!loading && (
+        <Animated.Text
+          style={{
             position: 'absolute',
             width: '100%',
             textAlign: 'center',
-            color: colors.danger,
+            color: color,
             fontSize: 13,
             fontWeight: '600',
             letterSpacing: 0.5,
-          },
-          labelOpacity,
-        ]}
-      >
-        {label}
-      </Animated.Text>
-
-      <GestureDetector gesture={pan}>
-        <Animated.View
-          style={[
-            {
-              width: THUMB_SIZE,
-              height: THUMB_SIZE,
-              borderRadius: THUMB_SIZE / 2,
-              backgroundColor: colors.danger,
-              alignItems: 'center',
-              justifyContent: 'center',
-              marginLeft: 4,
-              shadowColor: colors.danger,
-              shadowOffset: { width: 0, height: 4 },
-              shadowOpacity: 0.4,
-              shadowRadius: 8,
-              elevation: 6,
-            },
-            thumbStyle,
-          ]}
+            opacity: labelOpacity,
+          }}
         >
-          <ChevronRight size={22} color="#fff" />
-        </Animated.View>
-      </GestureDetector>
+          {label}
+        </Animated.Text>
+      )}
+
+      {loading && (
+        <View style={{ position: 'absolute', width: '100%', alignItems: 'center' }}>
+          <ActivityIndicator size="small" color={colors.textSecondary} />
+        </View>
+      )}
+
+      <Animated.View
+        {...panResponder.panHandlers}
+        style={{
+          width: THUMB_SIZE,
+          height: THUMB_SIZE,
+          borderRadius: THUMB_SIZE / 2,
+          backgroundColor: loading ? colors.textSecondary : color,
+          alignItems: 'center',
+          justifyContent: 'center',
+          marginLeft: 4,
+          elevation: 6,
+          shadowColor: loading ? colors.textSecondary : color,
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.4,
+          shadowRadius: 8,
+          transform: [{ translateX }],
+          opacity: loading ? 0.5 : 1,
+        }}
+      >
+        {loading
+          ? <ActivityIndicator size="small" color="#fff" />
+          : <ChevronRight size={22} color="#fff" />
+        }
+      </Animated.View>
     </View>
   );
 }

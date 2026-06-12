@@ -8,42 +8,29 @@ export default function AppHeader({ title, subtitle, showBack = false, rightElem
   const navigation = useNavigation();
 
   return (
-    <View
-      style={{
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingBottom: 16,
-        gap: 12,
-      }}
-    >
+    <View className="flex-row items-center pb-4 gap-3">
       {showBack && (
         <TouchableOpacity
           onPress={() => navigation.goBack()}
-          style={{
-            width: 40,
-            height: 40,
-            borderRadius: 12,
-            backgroundColor: colors.bgElevated,
-            alignItems: 'center',
-            justifyContent: 'center',
-            borderWidth: 1,
-            borderColor: colors.borderDefault,
-          }}
+          className="w-10 h-10 rounded-xl items-center justify-center border"
+          style={{ backgroundColor: colors.bgElevated, borderColor: colors.borderDefault }}
         >
           <ArrowLeft size={18} color={colors.textPrimary} />
         </TouchableOpacity>
       )}
 
-      <View style={{ flex: 1 }}>
+      <View className="flex-1">
         {subtitle && (
           <Text
-            style={{ color: colors.textSecondary, fontSize: 11, fontWeight: '500', letterSpacing: 0.8, textTransform: 'uppercase', marginBottom: 2 }}
+            className="text-[11px] font-medium tracking-[0.8px] uppercase mb-0.5"
+            style={{ color: colors.textSecondary }}
           >
             {subtitle}
           </Text>
         )}
         <Text
-          style={{ color: colors.textPrimary, fontSize: 22, fontWeight: '700', letterSpacing: -0.3 }}
+          className="text-[22px] font-bold tracking-[-0.3px]"
+          style={{ color: colors.textPrimary }}
         >
           {title}
         </Text>
