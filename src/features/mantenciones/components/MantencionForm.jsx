@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { Calendar } from 'lucide-react-native';
 import IconLucide from '../../../components/IconLucide';
 import Input from '../../../components/ui/Input';
-import Button from '../../../components/ui/Button';
 import { colors } from '../../../theme/theme';
 import useCategoriasService from '@/features/categorias/store/useCategoriasService';
+import SliderConfirm from '@/components/shared/SliderConfirm';
 
 export default function MantencionForm({ initialValues = {}, vehiculoKm = 0, onSubmit, loading }) {
   const categorias_predefinidas = useCategoriasService(s => s.categorias_predefinidas)
@@ -26,8 +25,6 @@ export default function MantencionForm({ initialValues = {}, vehiculoKm = 0, onS
   const [showProximaFecha, setShowProximaFecha] = useState(false);
 
   const set = (key, value) => setForm((p) => ({ ...p, [key]: value }));
-
-  const catSeleccionada = categorias_predefinidas.find((c) => c.id === form.categoria_id);
 
   const handleKmChange = (v) => {
     setForm((p) => {
@@ -85,8 +82,6 @@ export default function MantencionForm({ initialValues = {}, vehiculoKm = 0, onS
       proximos_km: form.proximos_km ? parseInt(form.proximos_km) : null,
     });
   };
-
-  const isValid = form.categoria_id && form.fecha_realizada;
 
   return (
     <ScrollView showsVerticalScrollIndicator={false}>
@@ -178,7 +173,7 @@ export default function MantencionForm({ initialValues = {}, vehiculoKm = 0, onS
         />
       )}
 
-      <Button label="Guardar mantención" onPress={handleSubmit} loading={loading} disabled={!isValid} />
+      <SliderConfirm onConfirm={handleSubmit} loading={loading} label="Guardar mantención" variant='primary' />
     </ScrollView>
   );
 }

@@ -11,3 +11,14 @@ export const addMantencion = async (mantencion) => {
     if (error) throw error
     return data
 }
+
+export const updateMantencion = async (mantencion_id, cambios) => {
+    const { data, error } = await supabase.from('mantenciones').update(cambios).eq('id', mantencion_id).select().single()
+    if (error) throw error
+    return data
+}
+
+export const deleteMantencion = async (mantencion_id) => {
+    const { error } = await supabase.from('mantenciones').delete().eq('id', mantencion_id)
+    if (error) throw error
+}

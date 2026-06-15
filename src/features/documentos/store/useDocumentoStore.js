@@ -1,56 +1,75 @@
+import useAuthStore from '@/features/auth/store/useAuthStore';
 import { create } from 'zustand';
+import { addDocumento, deleteDocumento, fetchDocumentos, updateDocumento } from '../service/documentosService';
+import { deleteArchivoDocumento, uploadDocumento } from '@/services/storage';
 
-const uid = () => `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
-
-const useDocumentoStore = create((set) => ({
+const useDocumentoStore = create((set, get) => ({
   documentos: [],
   loading: false,
   error: null,
 
   fetchDocumentos: async (vehiculoId) => {
-    // Local state — no async operation needed
+    const user = useAuthStore.getState().user
+    if (!user) throw new Error("Usuario no autenticado");
+
+    const data = await fetchDocumentos(vehiculoId)
+    set({ documentos: data })
   },
 
-  agregarDocumento: ({ vehiculoId, tipo, nombre, fechaEmision, fechaVencimiento, uri, fileName, mimeType, notas }) => {
-    const archivo_tipo = mimeType === 'application/pdf' ? 'pdf' : 'imagen';
-    const data = {
-      id: uid(),
+  agregarDocumento: async ({ vehiculoId, tipo, nombre, fechaEmision, fechaVencimiento, uri, fileName, mimeType, notas }) => {
+    const user = useAuthStore.getState().user
+    if (!user) throw new Error("Usuario no autenticado");
+
+    const path = await uploadDocumento({ uri, mimeType, fileName, userId: user.id, vehiculoId })
+
+    const data = await addDocumento({
       vehiculo_id: vehiculoId,
       tipo,
       nombre,
       fecha_emision: fechaEmision ?? null,
       fecha_vencimiento: fechaVencimiento ?? null,
-      archivo_url: uri,
-      archivo_tipo,
+      archivo_url: path,
+      archivo_tipo: mimeType === 'application/pdf' ? 'pdf' : 'imagen',
       notas: notas ?? null,
-      created_at: new Date().toISOString(),
-    };
+    });
+
     set((state) => ({ documentos: [data, ...state.documentos] }));
     return data;
   },
 
-  editarDocumento: (id, cambios, nuevoArchivoInfo) => {
+  editarDocumento: async (id, cambios, nuevoArchivoInfo) => {
+    const user = useAuthStore.getState().user
     let updateData = { ...cambios };
+
     if (nuevoArchivoInfo) {
-      const { uri, mimeType } = nuevoArchivoInfo;
-      updateData.archivo_url = uri;
-      updateData.archivo_tipo = mimeType === 'application/pdf' ? 'pdf' : 'imagen';
+      const docActual = get().documentos.find((d) => d.id === id)
+
+      if (docActual?.archivo_url) await deleteArchivoDocumento(docActual.archivo_url)
+
+      const path = await uploadDocumento({
+        uri: nuevoArchivoInfo.uri,
+        mimeType: nuevoArchivoInfo.mimeType,
+        fileName: nuevoArchivoInfo.name,
+        userId: user.id,
+        vehiculoId: docActual.vehiculo_id,
+      })
+
+      updateData.archivo_url = path
+      updateData.archivo_tipo = nuevoArchivoInfo.mimeType === 'application/pdf' ? 'pdf' : 'imagen'
     }
-    let updated;
-    set((state) => {
-      const documentos = state.documentos.map((d) => {
-        if (d.id === id) {
-          updated = { ...d, ...updateData };
-          return updated;
-        }
-        return d;
-      });
-      return { documentos };
-    });
-    return updated;
+
+    const data = await updateDocumento(id, updateData)
+    set((state) => ({
+      documentos: state.documentos.map((d) => d.id === id ? data : d),
+    }));
+    return data;
   },
 
-  borrarDocumento: (id) => {
+  borrarDocumento: async (id) => {
+    const doc = get().documentos.find((d) => d.id === id)
+    if (doc?.archivo_url) await deleteArchivoDocumento(doc.archivo_url)
+
+    await deleteDocumento(id)
     set((state) => ({
       documentos: state.documentos.filter((d) => d.id !== id),
     }));

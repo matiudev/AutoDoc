@@ -6,7 +6,6 @@ import Animated, { FadeInDown } from 'react-native-reanimated';
 import useDocumentoStore from '../features/documentos/store/useDocumentoStore';
 import useVehiculoStore from '../features/vehiculos/store/useVehiculoStore';
 import DocumentoCard from '../features/documentos/components/DocumentoCard';
-import DocumentoViewer from '../features/documentos/components/DocumentoViewer';
 import { SkeletonList } from '../components/ui/Skeleton';
 import EmptyState from '../components/shared/EmptyState';
 import AppHeader from '../components/shared/AppHeader';
@@ -19,7 +18,6 @@ export default function DocumentosScreen({ navigation }) {
   const documentos = useDocumentoStore(s => s.documentos);
   const loading = useDocumentoStore(s => s.loading);
   const fetchDocumentos = useDocumentoStore(s => s.fetchDocumentos);
-  const [viewer, setViewer] = useState({ visible: false, url: null, tipo: null });
   const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
@@ -93,12 +91,6 @@ export default function DocumentosScreen({ navigation }) {
         />
       )}
 
-      <DocumentoViewer
-        visible={viewer.visible}
-        url={viewer.url}
-        tipo={viewer.tipo}
-        onClose={() => setViewer({ visible: false, url: null, tipo: null })}
-      />
       <Toast />
     </View>
   );

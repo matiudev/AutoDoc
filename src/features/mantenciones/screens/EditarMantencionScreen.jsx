@@ -36,6 +36,7 @@ export default function EditarMantencionScreen({ route, navigation }) {
 
   const handleDelete = async () => {
     try {
+      setLoading(true)
       await borrarMantencion(mantencion.id);
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       navigation.goBack();
@@ -74,7 +75,7 @@ export default function EditarMantencionScreen({ route, navigation }) {
           <Text style={{ color: colors.textSecondary, fontSize: 14, marginBottom: 24 }}>
             Esta acción no se puede deshacer.
           </Text>
-          <SliderConfirm onConfirm={handleDelete} label="Deslizá para eliminar" />
+          <SliderConfirm onConfirm={handleDelete} label="Deslizá para eliminar" loading={loading} />
         </View>
       </Modal>
 

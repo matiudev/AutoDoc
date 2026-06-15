@@ -8,6 +8,7 @@ import Input from '../../../components/ui/Input';
 import Button from '../../../components/ui/Button';
 import { TIPOS_DOCUMENTO } from '../../../constants/categorias';
 import { colors } from '../../../theme/theme';
+import SliderConfirm from '@/components/shared/SliderConfirm';
 
 export default function DocumentoForm({ initialValues = {}, onSubmit, loading }) {
   const [form, setForm] = useState({
@@ -172,7 +173,7 @@ export default function DocumentoForm({ initialValues = {}, onSubmit, loading })
         </View>
       )}
 
-      <Button label="Guardar documento" onPress={handleSubmit} loading={loading} disabled={!isValid} />
+      <SliderConfirm label='Guardar Documento' onConfirm={handleSubmit} loading={loading} variant='primary' />    
     </ScrollView>
   );
 }

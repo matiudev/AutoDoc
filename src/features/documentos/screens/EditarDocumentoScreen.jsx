@@ -2,9 +2,10 @@ import React, { useState } from 'react';
 import { View, ScrollView, Modal, Pressable, Text, TouchableOpacity } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
-import { Trash2 } from 'lucide-react-native';
+import { Trash2, Eye } from 'lucide-react-native';
 import AppHeader from '../../../components/shared/AppHeader';
 import DocumentoForm from '../components/DocumentoForm';
+import DocumentoViewer from '../components/DocumentoViewer';
 import SliderConfirm from '../../../components/shared/SliderConfirm';
 import { Toast, ToastManager } from '../../../components/ui/CustomToast';
 import useDocumentoStore from '../store/useDocumentoStore';
@@ -17,6 +18,7 @@ export default function EditarDocumentoScreen({ route, navigation }) {
   const borrarDocumento = useDocumentoStore(s => s.borrarDocumento);
   const [loading, setLoading] = useState(false);
   const [showDelete, setShowDelete] = useState(false);
+  const [viewerVisible, setViewerVisible] = useState(false);
 
   const handleSubmit = async ({ form, archivo }) => {
     setLoading(true);
@@ -68,6 +70,28 @@ export default function EditarDocumentoScreen({ route, navigation }) {
             </TouchableOpacity>
           }
         />
+        {documento.archivo_url && (
+          <TouchableOpacity
+            onPress={() => setViewerVisible(true)}
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 10,
+              backgroundColor: colors.bgElevated,
+              borderRadius: 12,
+              borderWidth: 1,
+              borderColor: colors.borderDefault,
+              paddingVertical: 12,
+              paddingHorizontal: 16,
+              marginBottom: 20,
+            }}
+          >
+            <Eye size={18} color={colors.accentSoft} />
+            <Text style={{ color: colors.accentSoft, fontSize: 14, fontWeight: '500' }}>
+              Ver archivo adjunto
+            </Text>
+          </TouchableOpacity>
+        )}
         <DocumentoForm initialValues={documento} onSubmit={handleSubmit} loading={loading} />
       </ScrollView>
 
@@ -82,6 +106,12 @@ export default function EditarDocumentoScreen({ route, navigation }) {
         </View>
       </Modal>
 
+      <DocumentoViewer
+        visible={viewerVisible}
+        path={documento.archivo_url}
+        tipo={documento.archivo_tipo}
+        onClose={() => setViewerVisible(false)}
+      />
       <Toast />
     </View>
   );

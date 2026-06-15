@@ -1,11 +1,11 @@
 import useAuthStore from '@/features/auth/store/useAuthStore';
 import { create } from 'zustand';
-import { addMantencion, fetchMantenciones } from '../services/mantencionesService';
+import { addMantencion, deleteMantencion, fetchMantenciones, updateMantencion } from '../services/mantencionesService';
 import useVehiculoStore from '@/features/vehiculos/store/useVehiculoStore';
 
 const uid = () => `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
 
-const useMantencionStore = create((set) => ({
+const useMantencionStore = create((set, get) => ({
   mantenciones: [],
   loading: false,
   error: null,
@@ -30,27 +30,26 @@ const useMantencionStore = create((set) => ({
     }
 
     const vehiculoActivo = useVehiculoStore.getState().vehiculoActivo
-    const data = await addMantencion({...mantencion, vehiculo_id: vehiculoActivo.id})
+    const data = await addMantencion({ ...mantencion, vehiculo_id: vehiculoActivo.id })
 
-    set((state) => ({ mantenciones: [...state.mantenciones, data]}))
+    set((state) => ({ mantenciones: [...state.mantenciones, data] }))
   },
 
-  editarMantencion: (id, cambios) => {
-    let updated;
-    set((state) => {
-      const mantenciones = state.mantenciones.map((m) => {
-        if (m.id === id) {
-          updated = { ...m, ...cambios };
-          return updated;
-        }
-        return m;
-      });
-      return { mantenciones };
-    });
-    return updated;
+  editarMantencion: async (mantencion_id, cambios) => {
+    const user = useAuthStore.getState().user
+
+    if (!user) {
+      throw new Error("Usuario no autenticado");
+    }
+
+    const mantencionUpdate = get().mantenciones.map((mantencion) => mantencion.id === mantencion_id ? { ...mantencion, ...cambios } : mantencion);
+    await updateMantencion(mantencion_id, cambios)
+
+    set({ mantenciones: mantencionUpdate });
   },
 
-  borrarMantencion: (id) => {
+  borrarMantencion: async (id) => {
+    await deleteMantencion(id)
     set((state) => ({
       mantenciones: state.mantenciones.filter((m) => m.id !== id),
     }));
