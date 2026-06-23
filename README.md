@@ -8,7 +8,7 @@
 
 AutoDoc resuelve el problema de no saber dónde está un documento cuando se necesita y olvidar mantenciones hasta que algo falla o llega una multa. Permite al propietario registrar múltiples vehículos, adjuntar documentos con fechas de vencimiento y llevar un historial de mantenciones con alertas por fecha y por kilometraje.
 
-El sistema de notificaciones push corre en Supabase (pg_cron + Edge Functions) y envía alertas en 3 niveles (30 / 7 / 3 días antes del vencimiento) sin costo adicional en la capa gratuita de Supabase.
+Las alertas (V1) se calculan 100% en el cliente — sin tabla ni servicio propio — a partir de los documentos, mantenciones y kilometraje ya cargados, y se muestran en el Dashboard. El envío de notificaciones push reales vía Supabase (pg_cron + Edge Functions) está planeado para una fase siguiente, sin costo adicional en la capa gratuita de Supabase.
 
 ---
 
@@ -22,7 +22,7 @@ El sistema de notificaciones push corre en Supabase (pg_cron + Edge Functions) y
 
 ### 🔧 Mantenciones
 - Registro vinculado a 14 categorías predefinidas + categorías personalizadas
-- Alertas por fecha y por kilometraje (500 km antes del umbral)
+- Alertas por fecha y por kilometraje (atención a ≤1500 km del umbral, urgente a ≤500 km)
 - Historial con costo, taller, km al realizar y notas
 - Próxima alerta pre-completada desde la categoría, editable
 
@@ -31,15 +31,15 @@ El sistema de notificaciones push corre en Supabase (pg_cron + Edge Functions) y
 - Vehículo activo seleccionable desde el Dashboard (bottom sheet) o desde Perfil
 - Km actualizados automáticamente al registrar cada mantención
 
-### 🔔 Notificaciones Push
-- Alertas de documentos: 30 / 7 / 3 días antes del vencimiento
-- Alertas de mantenciones: por fecha (mismos niveles) y por km (500 km antes)
-- Arquitectura: pg_cron diario → Edge Function (Deno) → Expo Push API
+### 🔔 Alertas
+- Calculadas en el cliente (sin tabla ni servicio propio), reactivas a cambios en documentos/mantenciones/km
+- Documentos: 30 / 7 / 3 días antes del vencimiento
+- Mantenciones: por fecha (mismos niveles) y por km (atención ≤1500 km, urgente ≤500 km) — gana la más urgente
+- Notificaciones push reales (pg_cron diario → Edge Function (Deno) → Expo Push API): **pendiente, no implementado aún**
 
 ### 🏠 Dashboard
 - Resumen del vehículo activo con km actuales
-- Top 3 próximos vencimientos y próximas mantenciones
-- Últimas actividades registradas
+- Documentos por vencer y mantenciones por vencer, ordenados por urgencia
 - Estado positivo cuando no hay pendientes: "Podés manejar tranquilo, sin preocupaciones"
 
 ---
@@ -67,23 +67,26 @@ El sistema de notificaciones push corre en Supabase (pg_cron + Edge Functions) y
 
 ```
 AutoDoc/
+├── index.js                    # registerRootComponent(RootLayout)
+├── RootLayout.js               # ThemeProvider + <Toast/> global (única instancia) envolviendo App
+├── App.js                      # NavigationContainer, SafeAreaProvider, GestureHandlerRootView
 ├── src/
 │   ├── features/              # Módulos por dominio (auth, vehiculos, documentos, mantenciones, alertas)
 │   │   ├── auth/              # Login con Google Sign-In
 │   │   ├── vehiculos/         # CRUD de vehículos y selector activo
 │   │   ├── documentos/        # Adjuntar, ver y gestionar documentos
 │   │   ├── mantenciones/      # Registrar y consultar mantenciones
-│   │   └── alertas/           # Badges y listado de alertas pendientes
+│   │   └── alertas/           # Cálculo de alertas en el cliente (funciones puras + hook), sin store ni servicio
 │   ├── screens/               # Pantallas principales del tab bar
 │   ├── components/
-│   │   ├── ui/                # Button, Card, Input, Toast, Skeleton
+│   │   ├── ui/                # Button, Card, Input, CustomToast, Skeleton
 │   │   └── shared/            # Header, EmptyState, LoadingSpinner, SliderConfirm
-│   ├── navigation/            # RootStack y TabNavigator
+│   ├── navigation/            # RootStack (bootstrap de datos) y TabNavigator (solo UI)
 │   ├── services/              # supabase.js, storage.js, notifications.js
 │   ├── constants/             # Categorías predefinidas y colores
 │   └── theme/                 # theme.js, ThemeContext, useTheme
 ├── supabase/
-│   └── functions/             # Edge Functions (Deno) para envío de notificaciones
+│   └── functions/             # Edge Functions (Deno) para envío de notificaciones — fase 2, pendiente
 ├── .env
 └── package.json
 ```
@@ -93,20 +96,20 @@ AutoDoc/
 ## 🧭 Navegación
 
 ```
-RootStack
-├── AuthStack
-│   └── LoginScreen          # Google Sign-In
-└── AppStack (autenticado)
-    ├── TabNavigator
-    │   ├── DashboardScreen   # Resumen del vehículo activo
+RootStack                    # Además orquesta el bootstrap: user → vehículos → documentos/mantenciones
+├── LoginScreen               # Google Sign-In (si no hay user)
+└── (autenticado)
+    ├── TabNavigator           # Solo UI, sin fetch propio
+    │   ├── DashboardScreen   # Resumen del vehículo activo + alertas
     │   ├── DocumentosScreen  # Lista de documentos
     │   ├── MantencionesScreen# Historial de mantenciones
     │   └── PerfilScreen      # Vehículos, categorías, config, logout
+    ├── AgregarVehiculoScreen
+    ├── EditarVehiculoScreen
     ├── AgregarDocumentoScreen
     ├── EditarDocumentoScreen
     ├── AgregarMantencionScreen
-    ├── EditarMantencionScreen
-    └── EditarVehiculoScreen
+    └── EditarMantencionScreen
 ```
 
 ---

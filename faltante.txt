@@ -1,0 +1,31 @@
+Para retomar mañana, así quedaría el estado:
+
+Lo que ya está cerrado
+
+- calcularAlertas.js (funciones puras) + useAlertas.js (hook reactivo) + render en DashboardScreen.jsx.
+- Carga de datos centralizada en RootStack.jsx (cadena user → vehículos → documentos/mantenciones).
+- MantencionCard mostrando "Faltan X km" cuando la alerta es por kilometraje.
+- Bug del ToastManager y el typo <ToastMana/> resueltos.
+
+Pendiente, en orden de prioridad
+
+1. Probar con datos reales (lo primero que haría mañana)
+Nada de esto se probó corriendo la app todavía. Casos a forzar:
+- Un documento venciendo en 2, 8 y 25 días + uno vencido → confirmar colores/labels correctos.
+- Una mantención con proxima_fecha lejana pero proximos_km cercano → debe mostrar "Faltan X km", no la fecha.
+- Una mantención donde ambos caen en rango al mismo tiempo → confirmar que gana km (como pediste).
+- Arranque en frío sin vehiculoActivo todavía → confirmar que RootStack no explota antes de que fetchVehiculos resuelva.
+
+2. Decisión pendiente: inconsistencia en DocumentoCard
+Tiene su propio cálculo de urgencia (getEstadoVencimiento, hardcodeado adentro del componente) que duplica la lógica de evaluarDocumento. Funciona hoy porque los umbrales coinciden, pero son dos fuentes de verdad. Quedó pendiente de la vez pasada — convendría que reciba la alerta ya calculada (igual que hicimos con MantencionCard) en vez de recalcularla.
+
+3. Decisión pendiente: ¿"descartar" alertas?
+La versión vieja tenía esa función (ocultar una alerta sin resolverla). No la trajimos de vuelta. Si la querés, hay que decidir si es solo en memoria (se resetea al reabrir la app) o persistida.
+
+4. Decisión pendiente: ¿badge en el tab Dashboard?
+Antes había un punto pulsante en el ícono de la tab con la cantidad de alertas. Lo sacamos junto con el resto de la feature vieja. Si lo querés de vuelta, ahora sería trivial: useAlertas ya te da los counts.
+
+5. Fase 2 (más adelante, no es de mañana salvo que quieras arrancar)
+Notificaciones push reales vía Supabase Edge Functions + pg_cron, como quedó hablado al principio.
+
+Yo arrancaría por el punto 1 — correr la app con datos reales antes de seguir agregando features, para no acumular bugs sin detectar sobre una base no probada.

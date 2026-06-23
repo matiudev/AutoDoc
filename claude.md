@@ -23,7 +23,7 @@
 - Adjuntar documentos (foto con cámara o PDF desde galería/archivos)
 - Fechas de vencimiento con alertas en 3 niveles (30 / 7 / 3 días antes)
 - Registrar mantenciones vinculadas a categorías predefinidas + personalizadas
-- Alertas de mantención por fecha y por kilometraje (500 km antes del umbral)
+- Alertas de mantención por fecha y por kilometraje (atención a ≤1500 km del umbral, urgente a ≤500 km)
 - Notificaciones push via Supabase Edge Functions + Expo
 - Dashboard con resumen del vehículo activo
 - Google Sign-In como único método de autenticación
@@ -126,13 +126,15 @@
 ```
 
 ### Alerta
+> Tabla planificada para la Fase 2 (notificaciones push, ver sección 6). En V1 las alertas se calculan en el cliente sin persistir nada — ver "Alertas en V1 (cliente)" más abajo.
+
 ```javascript
 {
   id: uuid,
   vehiculo_id: uuid,
   tipo_origen: 'documento' | 'mantencion',
   origen_id: uuid,
-  tipo_alerta: '30_dias' | '7_dias' | '3_dias' | '500_km',
+  tipo_alerta: '30_dias' | '7_dias' | '3_dias' | 'atencion_km' | 'urgente_km',
   fecha_programada: date,
   enviada: boolean,
   descartada: boolean,
@@ -220,14 +222,13 @@ src/
       services/
         mantencionesService.js
 
-    alertas/
-      components/
-        AlertaBadge.jsx
-        AlertaItem.jsx
-      store/
-        useAlertaStore.js
-      services/
-        alertasService.js
+    alertas/                       # Sin store ni servicio: se deriva en el cliente, no se persiste (V1)
+      constants/
+        nivelesAlerta.js           # DIAS_ALERTA, KM_URGENTE, KM_ATENCION
+      utils/
+        calcularAlertas.js         # Funciones puras: evaluarDocumento, evaluarMantencion, RANGO_URGENCIA
+      hooks/
+        useAlertas.js              # Hook reactivo: suscribe a documentos/mantenciones/vehiculo y memoiza
 
   screens/                         # Solo las tabs principales del navbar
     DashboardScreen.jsx
@@ -240,8 +241,8 @@ src/
     shared/                        # Header, EmptyState, LoadingSpinner, SliderConfirm
 
   navigation/
-    RootStack.jsx
-    TabNavigator.jsx
+    RootStack.jsx                  # Orquesta el bootstrap de sesión: user → vehículos → documentos/mantenciones
+    TabNavigator.jsx                # Solo UI de tabs, sin fetch de datos
 
   services/
     supabase.js                    # Config y cliente Supabase
@@ -383,7 +384,16 @@ export default useVehiculoStore
 
 ---
 
-## 6. Notificaciones Push
+## 6. Alertas y Notificaciones Push
+
+### Alertas en V1 (cliente, implementado)
+
+No hay tabla `alertas` ni servicio propio en V1 — todo se calcula en el cliente a partir de `documentos`, `mantenciones` y `vehiculo.km_actual` ya cargados en sus stores, y se muestra en `DashboardScreen.jsx`:
+
+- `src/features/alertas/utils/calcularAlertas.js` — funciones puras (`evaluarDocumento`, `evaluarMantencion`) que devuelven `{ urgencia, dias|kmRestantes }` o `null`.
+- `src/features/alertas/hooks/useAlertas.js` — hook que se suscribe (selector de Zustand) a los tres stores y memoiza el resultado con `useMemo`; se recalcula solo cuando cambian los datos, sin fetch manual.
+- Empate de urgencia entre fecha y km (mismo `RANGO_URGENCIA`) → gana el kilometraje.
+- La carga de `documentos`/`mantenciones` que alimenta esto está centralizada en `RootStack.jsx`, reaccionando a `vehiculoActivo` (no depende de qué tab visite el usuario primero).
 
 ### Esquema de alertas por niveles
 
@@ -391,7 +401,11 @@ export default useVehiculoStore
 |---|---|
 | Documentos (vencimiento) | 30 días antes · 7 días antes · 3 días antes |
 | Mantenciones (fecha) | 30 días antes · 7 días antes · 3 días antes |
-| Mantenciones (km) | 500 km antes del umbral definido |
+| Mantenciones (km) | atención a ≤1500 km del umbral · urgente a ≤500 km del umbral |
+
+### Fase 2 — Notificaciones push (pendiente, no implementado)
+
+Lo que sigue describe la arquitectura planeada para enviar push reales; hoy las alertas solo se ven dentro de la app (Dashboard), no generan notificación.
 
 ### Arquitectura
 
