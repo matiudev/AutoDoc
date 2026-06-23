@@ -4,7 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
 import AppHeader from '../../../components/shared/AppHeader';
 import VehiculoForm from '../components/VehiculoForm';
-import { Toast, ToastManager } from '../../../components/ui/CustomToast';
+import { ToastManager } from '../../../components/ui/CustomToast';
 import useVehiculoStore from '../store/useVehiculoStore';
 import { colors } from '../../../theme/theme';
 
@@ -33,7 +33,6 @@ export default function AgregarVehiculoScreen({ navigation }) {
         <AppHeader title="Nuevo Vehículo" showBack />
         <VehiculoForm onSubmit={handleSubmit} loading={loading} />
       </ScrollView>
-      <Toast />
     </View>
   );
 }

@@ -9,8 +9,6 @@ export const fetchDocumentos = async (vehiculoId) => {
 export const addDocumento = async (documento) => {
     const { data, error } = await supabase.from('documentos').insert(documento).select().single()
     if (error) throw error
-    console.log(error);
-    
     return data
 }
 

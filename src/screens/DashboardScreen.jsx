@@ -1,19 +1,16 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, RefreshControl, StatusBar } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, ScrollView, TouchableOpacity, StatusBar } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ChevronDown, Gauge, Plus } from 'lucide-react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import useVehiculoStore from '../features/vehiculos/store/useVehiculoStore';
-import useAlertaStore from '../features/alertas/store/useAlertaStore';
 import useAuthStore from '../features/auth/store/useAuthStore';
 import VehiculoSelector from '../features/vehiculos/components/VehiculoSelector';
-import AlertaItem from '../features/alertas/components/AlertaItem';
-import { SkeletonList } from '../components/ui/Skeleton';
 import EmptyState from '../components/shared/EmptyState';
 import DocumentoCard from '../features/documentos/components/DocumentoCard';
 import MantencionCard from '../features/mantenciones/components/MantencionCard';
-import { Toast } from '../components/ui/CustomToast';
+import useAlertas from '../features/alertas/hooks/useAlertas';
 import { colors } from '../theme/theme';
 
 function SectionTitle({ title, action, onAction }) {
@@ -33,32 +30,10 @@ export default function DashboardScreen({ navigation }) {
   const insets = useSafeAreaInsets();
   const user = useAuthStore(s => s.user);
   const vehiculoActivo = useVehiculoStore(s => s.vehiculoActivo);
-  const fetchVehiculos = useVehiculoStore(s => s.fetchVehiculos);
-  const proximosVencimientos = useAlertaStore(s => s.proximosVencimientos);
-  const proximasMantenciones = useAlertaStore(s => s.proximasMantenciones);
-  const alertas = useAlertaStore(s => s.alertas);
-  const loading = useAlertaStore(s => s.loading);
-  const fetchTodo = useAlertaStore(s => s.fetchTodo);
-  const descartar = useAlertaStore(s => s.descartar);
   const [showSelector, setShowSelector] = useState(false);
-  const [refreshing, setRefreshing] = useState(false);
 
-  useEffect(() => {
-    if (user) fetchVehiculos(user.id);
-  }, [user]);
-
-  useEffect(() => {
-    if (vehiculoActivo) fetchTodo(vehiculoActivo.id);
-  }, [vehiculoActivo]);
-
-  const onRefresh = useCallback(async () => {
-    setRefreshing(true);
-    if (vehiculoActivo) await fetchTodo(vehiculoActivo.id);
-    setRefreshing(false);
-  }, [vehiculoActivo]);
-
-  const totalAlertas = alertas.length;
-  const sinProblemas = !loading && proximosVencimientos.length === 0 && proximasMantenciones.length === 0;
+  const { documentosPorVencer, mantencionesPorVencer } = useAlertas(vehiculoActivo?.id);
+  const sinProblemas = documentosPorVencer.length === 0 && mantencionesPorVencer.length === 0;
 
   return (
     <View className="flex-1" style={{ backgroundColor: colors.bgBase }}>
@@ -78,17 +53,6 @@ export default function DashboardScreen({ navigation }) {
               {user?.user_metadata?.name?.split(' ')[0] ?? 'AutoDoc'}
             </Text>
           </View>
-
-          {totalAlertas > 0 && (
-            <View
-              className="rounded-xl px-3 py-1.5 border"
-              style={{ backgroundColor: `${colors.danger}25`, borderColor: `${colors.danger}40` }}
-            >
-              <Text className="text-xs font-bold" style={{ color: colors.danger }}>
-                {totalAlertas} alerta{totalAlertas !== 1 ? 's' : ''}
-              </Text>
-            </View>
-          )}
         </View>
 
         {vehiculoActivo ? (
@@ -130,11 +94,8 @@ export default function DashboardScreen({ navigation }) {
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: insets.bottom + 100 }}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} />}
       >
-        {loading ? (
-          <SkeletonList count={3} />
-        ) : sinProblemas ? (
+        {sinProblemas ? (
           <Animated.View entering={FadeInDown.delay(200)}>
             <EmptyState
               icon="CheckCircle"
@@ -145,45 +106,37 @@ export default function DashboardScreen({ navigation }) {
           </Animated.View>
         ) : (
           <>
-            {proximosVencimientos.length > 0 && (
+            {documentosPorVencer.length > 0 && (
               <Animated.View entering={FadeInDown.delay(100)}>
                 <SectionTitle
                   title="Documentos por vencer"
                   action="Ver todos"
                   onAction={() => navigation.navigate('Documentos')}
                 />
-                {proximosVencimientos.map((doc) => (
+                {documentosPorVencer.map(({ documento }) => (
                   <DocumentoCard
-                    key={doc.id}
-                    documento={doc}
-                    onPress={() => navigation.navigate('EditarDocumento', { documento: doc })}
+                    key={documento.id}
+                    documento={documento}
+                    onPress={() => navigation.navigate('EditarDocumento', { documento })}
                   />
                 ))}
               </Animated.View>
             )}
 
-            {proximasMantenciones.length > 0 && (
+            {mantencionesPorVencer.length > 0 && (
               <Animated.View entering={FadeInDown.delay(200)}>
                 <SectionTitle
-                  title="Próximas mantenciones"
+                  title="Mantenciones por vencer"
                   action="Ver todas"
                   onAction={() => navigation.navigate('Mantenciones')}
                 />
-                {proximasMantenciones.map((m) => (
+                {mantencionesPorVencer.map(({ mantencion, alerta }) => (
                   <MantencionCard
-                    key={m.id}
-                    mantencion={m}
-                    onPress={() => navigation.navigate('EditarMantencion', { mantencion: m })}
+                    key={mantencion.id}
+                    mantencion={mantencion}
+                    alerta={alerta}
+                    onPress={() => navigation.navigate('EditarMantencion', { mantencion })}
                   />
-                ))}
-              </Animated.View>
-            )}
-
-            {alertas.length > 0 && (
-              <Animated.View entering={FadeInDown.delay(300)}>
-                <SectionTitle title="Alertas activas" />
-                {alertas.map((alerta) => (
-                  <AlertaItem key={alerta.id} alerta={alerta} onDescartar={descartar} />
                 ))}
               </Animated.View>
             )}
@@ -192,7 +145,6 @@ export default function DashboardScreen({ navigation }) {
       </ScrollView>
 
       <VehiculoSelector visible={showSelector} onClose={() => setShowSelector(false)} />
-      <Toast />
     </View>
   );
 }

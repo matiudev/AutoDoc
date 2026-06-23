@@ -3,8 +3,6 @@ import { create } from 'zustand';
 import { addMantencion, deleteMantencion, fetchMantenciones, updateMantencion } from '../services/mantencionesService';
 import useVehiculoStore from '@/features/vehiculos/store/useVehiculoStore';
 
-const uid = () => `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
-
 const useMantencionStore = create((set, get) => ({
   mantenciones: [],
   loading: false,

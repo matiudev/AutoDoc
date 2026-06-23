@@ -12,9 +12,7 @@ const useCategoriasService = create((set, get) => ({
             throw new Error("Usuario no autenticado");
         }
 
-        const data = await fetchCategoriasPredefinidas()
-        console.log(data);
-        
+        const data = await fetchCategoriasPredefinidas()        
 
         set({ categorias_predefinidas: data })
     },

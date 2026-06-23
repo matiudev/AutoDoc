@@ -5,7 +5,6 @@ import * as ImagePicker from 'expo-image-picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { FileText, Image as ImageIcon, Calendar } from 'lucide-react-native';
 import Input from '../../../components/ui/Input';
-import Button from '../../../components/ui/Button';
 import { TIPOS_DOCUMENTO } from '../../../constants/categorias';
 import { colors } from '../../../theme/theme';
 import SliderConfirm from '@/components/shared/SliderConfirm';

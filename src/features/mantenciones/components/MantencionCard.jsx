@@ -9,9 +9,10 @@ function formatFecha(fecha) {
   return new Date(fecha).toLocaleDateString('es-CL', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
-export default function MantencionCard({ mantencion, onPress }) {
+export default function MantencionCard({ mantencion, alerta, onPress }) {
   const cat = mantencion.categoria;
   const iconName = cat?.lucide_icon ?? 'Wrench';
+  const porKm = alerta?.kmRestantes != null;
 
   return (
     <TouchableOpacity
@@ -63,7 +64,15 @@ export default function MantencionCard({ mantencion, onPress }) {
           </View>
         </View>
 
-        {mantencion.proxima_fecha && (
+        {porKm ? (
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 6 }}>
+            <Text style={{ color: colors.accentSoft, fontSize: 12, fontWeight: '500' }}>
+              {alerta.kmRestantes < 0
+                ? `Vencido por ${Math.abs(alerta.kmRestantes).toLocaleString('es-CL')} km`
+                : `Faltan ${alerta.kmRestantes.toLocaleString('es-CL')} km`}
+            </Text>
+          </View>
+        ) : mantencion.proxima_fecha && (
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 6 }}>
             <Text style={{ color: colors.accentSoft, fontSize: 12, fontWeight: '500' }}>
               Próxima: {formatFecha(mantencion.proxima_fecha)}

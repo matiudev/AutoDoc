@@ -7,7 +7,7 @@ import AppHeader from '../../../components/shared/AppHeader';
 import DocumentoForm from '../components/DocumentoForm';
 import DocumentoViewer from '../components/DocumentoViewer';
 import SliderConfirm from '../../../components/shared/SliderConfirm';
-import { Toast, ToastManager } from '../../../components/ui/CustomToast';
+import { ToastManager } from '../../../components/ui/CustomToast';
 import useDocumentoStore from '../store/useDocumentoStore';
 import { colors } from '../../../theme/theme';
 
@@ -112,7 +112,6 @@ export default function EditarDocumentoScreen({ route, navigation }) {
         tipo={documento.archivo_tipo}
         onClose={() => setViewerVisible(false)}
       />
-      <Toast />
     </View>
   );
 }

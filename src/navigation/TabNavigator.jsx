@@ -7,8 +7,6 @@ import DashboardScreen from '../screens/DashboardScreen';
 import DocumentosScreen from '../screens/DocumentosScreen';
 import MantencionesScreen from '../screens/MantencionesScreen';
 import PerfilScreen from '../screens/PerfilScreen';
-import useAlertaStore from '../features/alertas/store/useAlertaStore';
-import AlertaBadge from '../features/alertas/components/AlertaBadge';
 import { colors } from '../theme/theme';
 
 const Tab = createBottomTabNavigator();
@@ -22,7 +20,6 @@ const TABS = [
 
 export default function TabNavigator() {
   const insets = useSafeAreaInsets();
-  const alertas = useAlertaStore(s => s.alertas);
 
   return (
     <Tab.Navigator
@@ -49,22 +46,16 @@ export default function TabNavigator() {
         tabBarIcon: ({ focused, color, size }) => {
           const tab = TABS.find((t) => t.name === route.name);
           const Icon = tab?.icon ?? Home;
-          const isDashboard = route.name === 'Dashboard';
 
           return (
-            <View style={{ position: 'relative' }}>
-              <View
-                style={focused ? {
-                  backgroundColor: `${colors.accent}20`,
-                  borderRadius: 10,
-                  padding: 4,
-                } : { padding: 4 }}
-              >
-                <Icon size={22} color={color} strokeWidth={focused ? 2.5 : 1.8} />
-              </View>
-              {isDashboard && alertas.length > 0 && (
-                <AlertaBadge count={alertas.length} />
-              )}
+            <View
+              style={focused ? {
+                backgroundColor: `${colors.accent}20`,
+                borderRadius: 10,
+                padding: 4,
+              } : { padding: 4 }}
+            >
+              <Icon size={22} color={color} strokeWidth={focused ? 2.5 : 1.8} />
             </View>
           );
         },

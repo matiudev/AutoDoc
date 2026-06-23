@@ -4,7 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
 import AppHeader from '../../../components/shared/AppHeader';
 import DocumentoForm from '../components/DocumentoForm';
-import { Toast, ToastManager } from '../../../components/ui/CustomToast';
+import { ToastManager } from '../../../components/ui/CustomToast';
 import useDocumentoStore from '../store/useDocumentoStore';
 import useVehiculoStore from '../../vehiculos/store/useVehiculoStore';
 import { colors } from '../../../theme/theme';
@@ -49,7 +49,6 @@ export default function AgregarDocumentoScreen({ navigation }) {
         <AppHeader title="Nuevo Documento" showBack />
         <DocumentoForm onSubmit={handleSubmit} loading={loading} />
       </ScrollView>
-      <Toast />
     </View>
   );
 }

@@ -6,7 +6,7 @@ import { Trash2 } from 'lucide-react-native';
 import AppHeader from '../../../components/shared/AppHeader';
 import MantencionForm from '../components/MantencionForm';
 import SliderConfirm from '../../../components/shared/SliderConfirm';
-import { Toast, ToastManager } from '../../../components/ui/CustomToast';
+import { ToastManager } from '../../../components/ui/CustomToast';
 import useMantencionStore from '../store/useMantencionStore';
 import useVehiculoStore from '../../vehiculos/store/useVehiculoStore';
 import { colors } from '../../../theme/theme';
@@ -78,8 +78,6 @@ export default function EditarMantencionScreen({ route, navigation }) {
           <SliderConfirm onConfirm={handleDelete} label="Deslizá para eliminar" loading={loading} />
         </View>
       </Modal>
-
-      <Toast />
     </View>
   );
 }

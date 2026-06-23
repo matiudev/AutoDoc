@@ -9,7 +9,6 @@ import MantencionCard from '../features/mantenciones/components/MantencionCard';
 import { SkeletonList } from '../components/ui/Skeleton';
 import EmptyState from '../components/shared/EmptyState';
 import AppHeader from '../components/shared/AppHeader';
-import { Toast } from '../components/ui/CustomToast';
 import { colors } from '../theme/theme';
 
 export default function MantencionesScreen({ navigation }) {
@@ -91,7 +90,6 @@ export default function MantencionesScreen({ navigation }) {
           showsVerticalScrollIndicator={false}
         />
       )}
-      <Toast />
     </View>
   );
 }

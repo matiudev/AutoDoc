@@ -9,7 +9,6 @@ import DocumentoCard from '../features/documentos/components/DocumentoCard';
 import { SkeletonList } from '../components/ui/Skeleton';
 import EmptyState from '../components/shared/EmptyState';
 import AppHeader from '../components/shared/AppHeader';
-import { Toast } from '../components/ui/CustomToast';
 import { colors } from '../theme/theme';
 
 export default function DocumentosScreen({ navigation }) {
@@ -90,8 +89,6 @@ export default function DocumentosScreen({ navigation }) {
           showsVerticalScrollIndicator={false}
         />
       )}
-
-      <Toast />
     </View>
   );
 }

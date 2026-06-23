@@ -7,7 +7,7 @@ import useVehiculoStore from '../features/vehiculos/store/useVehiculoStore';
 import VehiculoCard from '../features/vehiculos/components/VehiculoCard';
 import SliderConfirm from '../components/shared/SliderConfirm';
 import AppHeader from '../components/shared/AppHeader';
-import { Toast, ToastManager } from '../components/ui/CustomToast';
+import { ToastManager } from '../components/ui/CustomToast';
 import { colors } from '../theme/theme';
 
 function SettingRow({ icon: Icon, label, sublabel, onPress, danger = false }) {
@@ -163,8 +163,6 @@ export default function PerfilScreen({ navigation }) {
           <SliderConfirm onConfirm={handleLogout} label="Deslizá para cerrar sesión" />
         </View>
       </Modal>
-
-      <Toast />
     </View>
   );
 }

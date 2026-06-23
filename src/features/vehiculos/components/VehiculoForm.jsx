@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
 import Input from '../../../components/ui/Input';
-import Button from '../../../components/ui/Button';
 import { colors } from '../../../theme/theme';
 import { COLORES_VEHICULO } from '../../../constants/colores';
 import SliderConfirm from '@/components/shared/SliderConfirm';

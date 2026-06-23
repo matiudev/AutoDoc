@@ -13,6 +13,9 @@ import LoadingSpinner from '../components/shared/LoadingSpinner';
 import { registerForPushNotifications } from '../services/notifications';
 import { colors } from '../theme/theme';
 import useCategoriasService from '@/features/categorias/store/useCategoriasService';
+import useVehiculoStore from '../features/vehiculos/store/useVehiculoStore';
+import useDocumentoStore from '../features/documentos/store/useDocumentoStore';
+import useMantencionStore from '../features/mantenciones/store/useMantencionStore';
 
 const Stack = createNativeStackNavigator();
 
@@ -21,6 +24,10 @@ export default function RootStack() {
   const loading = useAuthStore(s => s.loading);
   const initialize = useAuthStore(s => s.initialize);
   const fetchCategoriasPredefinidas = useCategoriasService(s => s.fetchCategoriasPredefinidas)
+  const fetchVehiculos = useVehiculoStore(s => s.fetchVehiculos);
+  const vehiculoActivo = useVehiculoStore(s => s.vehiculoActivo);
+  const fetchDocumentos = useDocumentoStore(s => s.fetchDocumentos);
+  const fetchMantenciones = useMantencionStore(s => s.fetchMantenciones);
 
   useEffect(() => {
     initialize();
@@ -30,8 +37,16 @@ export default function RootStack() {
     if (user) {
       fetchCategoriasPredefinidas();
       registerForPushNotifications(user.id);
+      fetchVehiculos();
     }
   }, [user?.id]);
+
+  useEffect(() => {
+    if (vehiculoActivo) {
+      fetchDocumentos(vehiculoActivo.id);
+      fetchMantenciones(vehiculoActivo.id);
+    }
+  }, [vehiculoActivo]);
 
   if (loading) return <LoadingSpinner />;
 

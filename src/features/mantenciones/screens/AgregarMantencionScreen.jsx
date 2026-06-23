@@ -4,7 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
 import AppHeader from '../../../components/shared/AppHeader';
 import MantencionForm from '../components/MantencionForm';
-import { Toast, ToastManager } from '../../../components/ui/CustomToast';
+import { ToastManager } from '../../../components/ui/CustomToast';
 import useMantencionStore from '../store/useMantencionStore';
 import useVehiculoStore from '../../vehiculos/store/useVehiculoStore';
 import { colors } from '../../../theme/theme';
@@ -41,7 +41,6 @@ export default function AgregarMantencionScreen({ navigation }) {
         <AppHeader title="Nueva Mantención" showBack />
         <MantencionForm vehiculoKm={vehiculoActivo?.km_actual ?? 0} onSubmit={handleSubmit} loading={loading} />
       </ScrollView>
-      <Toast />
     </View>
   );
 }

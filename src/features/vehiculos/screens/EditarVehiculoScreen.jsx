@@ -5,7 +5,7 @@ import * as Haptics from 'expo-haptics';
 import AppHeader from '../../../components/shared/AppHeader';
 import VehiculoForm from '../components/VehiculoForm';
 import SliderConfirm from '../../../components/shared/SliderConfirm';
-import { Toast, ToastManager } from '../../../components/ui/CustomToast';
+import { ToastManager } from '../../../components/ui/CustomToast';
 import useVehiculoStore from '../store/useVehiculoStore';
 import { colors } from '../../../theme/theme';
 import { Trash2 } from 'lucide-react-native';
@@ -36,6 +36,7 @@ export default function EditarVehiculoScreen({ route, navigation }) {
     try {
       await borrarVehiculo(vehiculo.id);
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      ToastManager.show({ type: 'success', text1: 'Vehículo eliminado' });
       navigation.goBack();
     } catch (err) {
       ToastManager.show({ type: 'error', text1: 'Error', text2: err.message });
@@ -70,8 +71,6 @@ export default function EditarVehiculoScreen({ route, navigation }) {
           <SliderConfirm onConfirm={handleDelete} label="Deslizá para eliminar" loading={loading} />
         </View>
       </Modal>
-
-      <Toast />
     </View>
   );
 }
